@@ -396,7 +396,7 @@ tr:hover td{background:#fafaf8}
     <label>部門</label><select id="a-dept"><option>業務部</option><option>研發部</option><option>財務部</option><option>行政部</option><option>人資部</option></select>
     <label>職稱</label><input id="a-title" placeholder="例：業務專員"/>
     <label>到職日</label><input id="a-date" type="date"/>
-    <label>契約類型</label><select id="a-contract"><option>不定期契約</option><option>定期契約</option><option>部分工時</option></select>
+    <label>契約類型</label><select id="a-contract"><option>不定期契約(直接)</option><option>不定期契約(間接)</option><option>定期契約</option><option>約聘人員</option></select>
     <div class="mfooter"><button class="btn" onclick="closeM('m-add')">取消</button><button class="btn dark" onclick="addEmp()">新增</button></div>
   </div>
 </div>
@@ -411,7 +411,7 @@ tr:hover td{background:#fafaf8}
     <label>部門</label><select id="e-dept"><option>業務部</option><option>研發部</option><option>財務部</option><option>行政部</option><option>人資部</option></select>
     <label>職稱</label><input id="e-title"/>
     <label>到職日</label><input id="e-date" type="date"/>
-    <label>契約類型</label><select id="e-contract"><option>不定期契約</option><option>定期契約</option><option>部分工時</option></select>
+    <label>契約類型</label><select id="e-contract"><option>不定期契約(直接)</option><option>不定期契約(間接)</option><option>定期契約</option><option>約聘人員</option></select>
     <div class="mfooter"><button class="btn" onclick="closeM('m-edit')">取消</button><button class="btn dark" onclick="saveEdit()">儲存</button></div>
   </div>
 </div>
@@ -424,7 +424,7 @@ tr:hover td{background:#fafaf8}
       📋 Excel 欄位順序（第一列為標題，可自行調整欄位名稱）：<br>
       <b>工號、姓名、部門、職稱、到職日、契約類型</b><br>
       到職日格式：2025-04-01 或 2025/04/01<br>
-      契約類型：不定期契約 / 定期契約 / 部分工時
+      契約類型：不定期契約(直接) / 不定期契約(間接) / 定期契約 / 約聘人員
     </div>
     <div class="drop-zone" id="drop-zone" onclick="document.getElementById('excel-input').click()"
       ondragover="event.preventDefault();this.classList.add('drag')"
@@ -493,16 +493,16 @@ const PERMS = [
 
 let me   = null
 let emps = [
-  { id:'B001', name:'張偉誠', dept:'研發部', title:'軟體工程師', date:'2025-04-01', contract:'不定期契約', status:'待用印',  rec:true,  sal:true,  sealDate:null },
-  { id:'B002', name:'吳雅婷', dept:'業務部', title:'業務專員',   date:'2025-04-08', contract:'不定期契約', status:'薪酬確認', rec:false, sal:true,  sealDate:null },
+  { id:'B001', name:'張偉誠', dept:'研發部', title:'軟體工程師', date:'2025-04-01', contract:'不定期契約(直接)', status:'待用印',  rec:true,  sal:true,  sealDate:null },
+  { id:'B002', name:'吳雅婷', dept:'業務部', title:'業務專員',   date:'2025-04-08', contract:'不定期契約(直接)', status:'薪酬確認', rec:false, sal:true,  sealDate:null },
   { id:'B003', name:'劉承翰', dept:'財務部', title:'財務分析師', date:'2025-04-10', contract:'定期契約',   status:'招募確認', rec:true,  sal:false, sealDate:null },
-  { id:'B004', name:'黃怡君', dept:'行政部', title:'行政助理',   date:'2025-04-15', contract:'部分工時',   status:'待確認',  rec:false, sal:false, sealDate:null },
-  { id:'B005', name:'蔡宗霖', dept:'研發部', title:'系統架構師', date:'2025-03-20', contract:'不定期契約', status:'已用印',  rec:true,  sal:true,  sealDate:'2025-04-02' },
-  { id:'B006', name:'林淑芬', dept:'人資部', title:'人資專員',   date:'2025-03-25', contract:'不定期契約', status:'已用印',  rec:true,  sal:true,  sealDate:'2025-04-05' },
+  { id:'B004', name:'黃怡君', dept:'行政部', title:'行政助理',   date:'2025-04-15', contract:'不定期契約(間接)',   status:'待確認',  rec:false, sal:false, sealDate:null },
+  { id:'B005', name:'蔡宗霖', dept:'研發部', title:'系統架構師', date:'2025-03-20', contract:'不定期契約(直接)', status:'已用印',  rec:true,  sal:true,  sealDate:'2025-04-02' },
+  { id:'B006', name:'林淑芬', dept:'人資部', title:'人資專員',   date:'2025-03-25', contract:'不定期契約(直接)', status:'已用印',  rec:true,  sal:true,  sealDate:'2025-04-05' },
 ]
 let logs = [
-  { id:'B005', name:'蔡宗霖', dept:'研發部', contract:'不定期契約', date:'2025-04-02', by:'王小明' },
-  { id:'B006', name:'林淑芬', dept:'人資部', contract:'不定期契約', date:'2025-04-05', by:'王小明' },
+  { id:'B005', name:'蔡宗霖', dept:'研發部', contract:'不定期契約(直接)', date:'2025-04-02', by:'王小明' },
+  { id:'B006', name:'林淑芬', dept:'人資部', contract:'不定期契約(直接)', date:'2025-04-05', by:'王小明' },
 ]
 let selectedWord = new Set()
 let importData   = []
@@ -861,7 +861,7 @@ function parseExcel(file){
           dept:String(row[colMap.dept]||'').trim(),
           title:String(row[colMap.title]||'').trim(),
           date:dateStr,
-          contract:String(row[colMap.contract]||'不定期契約').trim()||'不定期契約',
+          contract:String(row[colMap.contract]||'不定期契約(直接)').trim()||'不定期契約(直接)',
           isDup
         })
         if(isDup&&id) duplicates.push(id)
@@ -896,7 +896,7 @@ function confirmImport(){
     emps.push({
       id:r.id||`EMP${Date.now()}${Math.random().toString(36).slice(2,5)}`,
       name:r.name, dept:r.dept, title:r.title, date:r.date,
-      contract:r.contract||'不定期契約',
+      contract:r.contract||'不定期契約(直接)',
       status:'待確認', rec:false, sal:false, sealDate:null
     })
   })
@@ -930,7 +930,7 @@ function openEdit(id){
   document.getElementById('e-dept').value=e.dept
   document.getElementById('e-title').value=e.title||''
   document.getElementById('e-date').value=e.date||''
-  document.getElementById('e-contract').value=e.contract||'不定期契約'
+  document.getElementById('e-contract').value=e.contract||'不定期契約(直接)'
   document.getElementById('m-edit').classList.add('open')
 }
 function closeM(id){ document.getElementById(id).classList.remove('open') }
