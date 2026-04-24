@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>勞動契約用印管理系統</title>
+<style>
+/* ════════════════════════════ 全域 ════════════════════════════ */
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Microsoft JhengHei','微軟正黑體',sans-serif;font-size:13px;background:#f5f4f0;color:#1a1a18}
+
+/* ════════════════════════════ 登入 ════════════════════════════ */
+#s-login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
+.login-card{background:#fff;border:1px solid #ddd;border-radius:12px;padding:2.25rem 2rem;width:100%;max-width:380px}
+.logo-row{display:flex;align-items:center;gap:10px;margin-bottom:2rem}
+.logo-box{width:38px;height:38px;background:#2c2c2a;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#f1efe8;font-size:17px;font-weight:500;flex-shrink:0}
+.logo-row h1{font-size:14px;font-weight:500;line-height:1.35}
+.logo-row p{font-size:11px;color:#888;margin-top:2px}
+.field{margin-top:14px}
+.field label{font-size:11px;color:#666;display:block;margin-bottom:5px}
+.field input{width:100%;padding:9px 11px;font-size:13px;border:1px solid #ccc;border-radius:8px;background:#fff;color:#1a1a18}
+.field input:focus{outline:none;border-color:#888}
+.field input.err{border-color:#e24b4a}
+.auto-name{padding:9px 11px;font-size:13px;border:1px solid #e5e5e5;border-radius:8px;background:#f5f4f0;min-height:38px;display:flex;align-items:center;gap:8px}
+.auto-name.muted{color:#aaa}
+.dept-tag{font-size:10px;padding:2px 7px;border-radius:3px;background:#eaf3de;color:#27500a;font-weight:500}
+.err-msg{font-size:11px;color:#a32d2d;margin-top:5px;display:none}
+.btn-login{width:100%;margin-top:1.25rem;padding:10px;background:#2c2c2a;color:white;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer}
+.btn-login:hover{background:#444}
+.login-note{font-size:11px;color:#aaa;text-align:center;margin-top:12px}
+
+/* ════════════════════════════ 主畫面 ════════════════════════════ */
+#s-main{display:none;flex-direction:column;min-height:100vh}
+.topbar{background:#fff;border-bottom:1px solid #e5e5e5;padding:10px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.topbar-l{display:flex;align-items:center;gap:10px}
+.topbar-brand{font-size:13px;font-weight:500}
+.topbar-sep{width:1px;height:14px;background:#ddd}
+.topbar-who{font-size:12px;color:#666}
+.topbar-r{display:flex;align-items:center;gap:8px}
+.role-tag{font-size:10px;padding:3px 9px;border-radius:3px;font-weight:500}
+.role-hr{background:#eeedfe;color:#3c3489}
+.role-rec{background:#e6f1fb;color:#0c447c}
+.role-sal{background:#eaf3de;color:#27500a}
+.btn-out{font-size:11px;padding:4px 10px;border:1px solid #ddd;border-radius:5px;background:none;color:#666;cursor:pointer}
+.btn-out:hover{background:#f5f4f0}
+
+.tabs{background:#fff;border-bottom:1px solid #e5e5e5;display:flex;padding:0 18px}
+.tab{padding:10px 14px;font-size:12px;color:#888;background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap}
+.tab.on{color:#1a1a18;font-weight:500;border-bottom-color:#2c2c2a}
+.tab:hover:not(.on){color:#1a1a18}
+
+.body{padding:16px 18px;flex:1}
+.pane{display:none}
+.pane.on{display:block}
+.ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.pt{font-size:14px;font-weight:500}
+.pa{display:flex;gap:7px;align-items:center}
+
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:14px}
+.kpi{background:#fff;border:1px solid #e5e5e5;border-radius:8px;padding:10px 12px}
+.kpi-n{font-size:20px;font-weight:500}
+.kpi-l{font-size:10px;color:#888;margin-top:2px}
+
+.search-bar{display:flex;gap:7px;margin-bottom:12px}
+.si{flex:1;padding:7px 10px;font-size:12px;border:1px solid #ccc;border-radius:8px;background:#fff}
+.sf{padding:7px 10px;font-size:12px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer}
+
+.tw{background:#fff;border:1px solid #e5e5e5;border-radius:12px;overflow:hidden}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+th{padding:9px 12px;font-size:10px;font-weight:500;color:#888;background:#f5f4f0;border-bottom:1px solid #e5e5e5;text-align:left}
+td{padding:10px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafaf8}
+
+.badge{display:inline-block;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:500;white-space:nowrap}
+.b-wait{background:#faeeda;color:#633806}
+.b-rec{background:#e6f1fb;color:#0c447c}
+.b-sal{background:#eaf3de;color:#27500a}
+.b-ready{background:#d3d1c7;color:#2c2c2a}
+.b-done{background:#2c2c2a;color:#f1efe8}
+.b-rej{background:#fcebeb;color:#791f1f}
+
+.ab{font-size:11px;padding:3px 9px;border:1px solid #ccc;border-radius:3px;background:none;cursor:pointer;margin-right:3px}
+.ab:hover{background:#f5f4f0}
+.ab.ok{border-color:#c0dd97;color:#3b6d11}
+.ab.no{border-color:#f7c1c1;color:#a32d2d}
+.ab.ink{background:#2c2c2a;color:white;border-color:#2c2c2a}
+.ab.edit{border-color:#b5d4f4;color:#185fa5}
+.no-perm{font-size:10px;color:#bbb;padding:3px 8px;border:1px dashed #ddd;border-radius:3px;display:inline-block}
+
+.btn{font-size:11px;padding:6px 12px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer}
+.btn:hover{background:#f5f4f0}
+.btn.dark{background:#2c2c2a;color:white;border-color:#2c2c2a}
+.btn.dark:hover{background:#444}
+.btn.blue{background:#185fa5;color:white;border-color:#185fa5}
+.btn.blue:hover{background:#0c447c}
+
+.empty{text-align:center;padding:2.5rem;color:#aaa;font-size:12px}
+.perm-banner{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f5f4f0;border:1px solid #e5e5e5;border-radius:8px;margin-bottom:12px;font-size:11px;color:#666}
+.perm-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.flow{display:flex;align-items:center;gap:4px}
+.fd{width:7px;height:7px;border-radius:50%}
+.fd.done{background:#639922}
+.fd.act{background:#378add}
+.fa{font-size:9px;color:#bbb}
+
+/* ════ 產出申請單 ════ */
+.seal-panel{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.seal-right{background:#fff;border:1px solid #e5e5e5;border-radius:12px;padding:14px}
+.sel-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid #f0f0f0;cursor:pointer}
+.sel-item:last-child{border-bottom:none}
+.sel-item:hover{background:#fafaf8}
+.sel-item input[type=checkbox]{width:14px;height:14px;cursor:pointer;accent-color:#2c2c2a}
+.sel-name{flex:1}
+.sel-dept{font-size:11px;color:#888}
+.chosen-item{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-radius:4px;background:#f5f4f0;margin-bottom:5px;font-size:12px}
+.chosen-remove{font-size:10px;color:#a32d2d;cursor:pointer;border:none;background:none}
+.form-row{display:flex;flex-direction:column;gap:3px;margin-bottom:10px}
+.form-row label{font-size:11px;color:#666}
+.form-row input{padding:7px 9px;font-size:12px;border:1px solid #ccc;border-radius:8px;background:#fff}
+.gen-btn{width:100%;padding:10px;background:#185fa5;color:white;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;margin-top:4px}
+.gen-btn:hover{background:#0c447c}
+.gen-btn:disabled{background:#ccc;cursor:default}
+
+/* ════ Modal ════ */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:200;align-items:center;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:12px;padding:1.5rem;width:340px;max-width:95vw}
+.modal h3{font-size:13px;font-weight:500;margin-bottom:1rem}
+.modal label{font-size:11px;color:#666;display:block;margin-bottom:4px;margin-top:11px}
+.modal input,.modal select{width:100%;padding:8px 10px;font-size:12px;border:1px solid #ccc;border-radius:8px;background:#fff}
+.mfooter{display:flex;justify-content:flex-end;gap:7px;margin-top:1.25rem}
+
+/* ════════════════════════════ 列印申請單 ════════════════════════════ */
+@media print{
+  body *{visibility:hidden !important}
+  #print-area,#print-area *{visibility:visible !important}
+  #print-area{
+    position:fixed;inset:0;
+    display:block !important;
+    background:white;
+    padding:0;margin:0;
+  }
+}
+#print-area{display:none}
+
+.print-page{
+  width:210mm;
+  min-height:297mm;
+  padding:8mm 10mm 8mm 18mm;
+  background:white;
+  font-family:'標楷體','DFKai-SB','BiauKai',serif;
+  font-size:11pt;
+  color:#000;
+  box-sizing:border-box;
+}
+.print-title{
+  text-align:center;
+  font-size:18pt;
+  font-weight:bold;
+  letter-spacing:8px;
+  margin-bottom:4mm;
+}
+.print-date{
+  text-align:right;
+  font-size:11pt;
+  margin-bottom:2mm;
+}
+.print-doc-type{
+  font-size:11pt;
+  margin-bottom:1mm;
+  line-height:1.8;
+}
+.print-table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:11pt;
+  margin-top:2mm;
+}
+.print-table td,.print-table th{
+  border:1px solid #000;
+  padding:3px 6px;
+  vertical-align:middle;
+}
+.print-table .hdr{
+  text-align:center;
+  width:22mm;
+  font-weight:normal;
+}
+.print-approve{
+  width:100%;
+  border-collapse:collapse;
+  font-size:11pt;
+  margin-top:3mm;
+}
+.print-approve td{
+  border:1px solid #000;
+  padding:3px 6px;
+  text-align:center;
+  height:18mm;
+  vertical-align:top;
+}
+.print-approve .approve-hdr{
+  height:auto;
+  vertical-align:middle;
+  background:#f5f5f5;
+}
+.print-notes{
+  font-size:9pt;
+  margin-top:3mm;
+  line-height:1.7;
+}
+.print-footer{
+  display:flex;
+  justify-content:space-between;
+  font-size:9pt;
+  margin-top:3mm;
+}
+</style>
+</head>
+<body>
+
+<!-- ══ 登入 ══ -->
+<div id="s-login">
+  <div class="login-card">
+    <div class="logo-row">
+      <div class="logo-box">印</div>
+      <div><h1>勞動契約用印管理系統</h1><p>Human Resources · Contract Seal</p></div>
+    </div>
+    <div class="field">
+      <label>工號</label>
+      <input id="li-id" type="text" placeholder="請輸入工號，例：A001" maxlength="10"
+        oninput="onId(this)" onkeydown="if(event.key==='Enter')doLogin()" />
+      <div class="err-msg" id="err-id">查無此工號</div>
+    </div>
+    <div class="field">
+      <label>姓名（自動帶入）</label>
+      <div class="auto-name muted" id="li-name"><span id="li-name-text">—</span></div>
+    </div>
+    <div class="field">
+      <label>登入密碼</label>
+      <input id="li-pw" type="password" placeholder="請輸入密碼"
+        onkeydown="if(event.key==='Enter')doLogin()" />
+      <div class="err-msg" id="err-pw">密碼錯誤，請重試</div>
+    </div>
+    <button class="btn-login" onclick="doLogin()">登 入</button>
+    <div class="login-note">本系統僅供授權人資人員使用</div>
+  </div>
+</div>
+
+<!-- ══ 主畫面 ══ -->
+<div id="s-main">
+  <div class="topbar">
+    <div class="topbar-l">
+      <span class="topbar-brand">勞動契約用印管理</span>
+      <div class="topbar-sep"></div>
+      <span class="topbar-who" id="who"></span>
+    </div>
+    <div class="topbar-r">
+      <span class="role-tag" id="role-tag"></span>
+      <button class="btn-out" onclick="logout()">登出</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab on"  onclick="sw('emp',this)">員工名單</button>
+    <button class="tab"     onclick="sw('confirm',this)">確認名單</button>
+    <button class="tab"     onclick="sw('seal',this)">用印管理</button>
+    <button class="tab"     onclick="sw('word',this)">產出申請單</button>
+    <button class="tab"     onclick="sw('log',this)">用印紀錄</button>
+  </div>
+  <div class="body">
+
+    <!-- 員工名單 -->
+    <div class="pane on" id="p-emp">
+      <div class="ph"><span class="pt">員工名單</span><div class="pa" id="emp-actions"></div></div>
+      <div class="kpi-row">
+        <div class="kpi"><div class="kpi-n" id="k-total">0</div><div class="kpi-l">員工總數</div></div>
+        <div class="kpi"><div class="kpi-n" id="k-new">0</div><div class="kpi-l">本月新進</div></div>
+        <div class="kpi"><div class="kpi-n" id="k-pend">0</div><div class="kpi-l">待處理</div></div>
+        <div class="kpi"><div class="kpi-n" id="k-done">0</div><div class="kpi-l">已用印</div></div>
+      </div>
+      <div class="search-bar">
+        <input class="si" id="q-emp" placeholder="搜尋姓名、工號、部門…" oninput="rEmp()" />
+        <select class="sf" id="f-dept" onchange="rEmp()">
+          <option value="">全部部門</option>
+          <option>業務部</option><option>研發部</option><option>財務部</option><option>行政部</option><option>人資部</option>
+        </select>
+        <select class="sf" id="f-status" onchange="rEmp()">
+          <option value="">全部狀態</option>
+          <option>待確認</option><option>招募確認</option><option>薪酬確認</option><option>待用印</option><option>已用印</option><option>退回</option>
+        </select>
+      </div>
+      <div class="tw"><table>
+        <thead><tr>
+          <th style="width:60px">工號</th><th style="width:70px">姓名</th><th style="width:70px">部門</th>
+          <th style="width:90px">職稱</th><th style="width:82px">到職日</th><th style="width:78px">契約</th>
+          <th style="width:78px">狀態</th><th style="width:90px">操作</th>
+        </tr></thead>
+        <tbody id="tb-emp"></tbody>
+      </table></div>
+    </div>
+
+    <!-- 確認名單 -->
+    <div class="pane" id="p-confirm">
+      <div class="ph"><span class="pt">確認名單</span><span style="font-size:11px;color:#888">招募＋薪酬雙重確認後方可用印</span></div>
+      <div id="confirm-banner" class="perm-banner"></div>
+      <div class="kpi-row">
+        <div class="kpi"><div class="kpi-n" id="c-k1">0</div><div class="kpi-l">待招募確認</div></div>
+        <div class="kpi"><div class="kpi-n" id="c-k2">0</div><div class="kpi-l">招募已確認</div></div>
+        <div class="kpi"><div class="kpi-n" id="c-k3">0</div><div class="kpi-l">薪酬已確認</div></div>
+        <div class="kpi"><div class="kpi-n" id="c-k4">0</div><div class="kpi-l">雙確認完成</div></div>
+      </div>
+      <div class="tw"><table>
+        <thead><tr>
+          <th style="width:60px">工號</th><th style="width:70px">姓名</th><th style="width:70px">部門</th>
+          <th style="width:80px">契約</th><th style="width:108px">招募確認</th><th style="width:108px">薪酬確認</th><th style="width:100px">操作</th>
+        </tr></thead>
+        <tbody id="tb-confirm"></tbody>
+      </table></div>
+    </div>
+
+    <!-- 用印管理 -->
+    <div class="pane" id="p-seal">
+      <div class="ph"><span class="pt">用印管理</span><span style="font-size:11px;color:#888">雙確認完成、尚未用印</span></div>
+      <div class="tw"><table>
+        <thead><tr>
+          <th style="width:60px">工號</th><th style="width:70px">姓名</th><th style="width:70px">部門</th>
+          <th style="width:80px">契約</th><th style="width:82px">到職日</th><th style="width:95px">確認流程</th><th style="width:85px">操作</th>
+        </tr></thead>
+        <tbody id="tb-seal"></tbody>
+      </table></div>
+    </div>
+
+    <!-- 產出申請單 -->
+    <div class="pane" id="p-word">
+      <div class="ph">
+        <span class="pt">產出用印申請單</span>
+        <span style="font-size:11px;color:#888">勾選已用印員工 → 列印成 PDF</span>
+      </div>
+      <div class="seal-panel">
+        <div>
+          <div style="font-size:11px;font-weight:500;color:#888;margin-bottom:8px">選擇員工（已用印）</div>
+          <div class="tw"><div id="word-sel-list"></div></div>
+        </div>
+        <div class="seal-right">
+          <div style="font-size:13px;font-weight:500;margin-bottom:12px">申請單資訊</div>
+          <div class="form-row">
+            <label>申請日期</label>
+            <input type="date" id="w-date" />
+          </div>
+          <div class="form-row">
+            <label>申請人（自動帶入）</label>
+            <input type="text" id="w-applicant" readonly style="background:#f5f4f0;color:#888" />
+          </div>
+          <div style="font-size:11px;font-weight:500;color:#888;margin:12px 0 6px">已選員工</div>
+          <div id="chosen-list" style="min-height:60px;margin-bottom:10px">
+            <div style="font-size:12px;color:#aaa;padding:10px 0">請從左側勾選員工</div>
+          </div>
+          <div style="font-size:11px;color:#666;margin-bottom:12px;padding:8px;background:#f0f7ff;border-radius:6px;line-height:1.6" id="word-count-hint"></div>
+          <button class="gen-btn" id="gen-btn" onclick="printForm()" disabled>列印申請單（另存 PDF）</button>
+          <div style="font-size:10px;color:#aaa;margin-top:6px;text-align:center">列印視窗開啟後，選「另存為 PDF」即可</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 用印紀錄 -->
+    <div class="pane" id="p-log">
+      <div class="ph"><span class="pt">用印紀錄</span></div>
+      <div class="tw"><table>
+        <thead><tr>
+          <th style="width:60px">工號</th><th style="width:70px">姓名</th><th style="width:70px">部門</th>
+          <th style="width:80px">契約</th><th style="width:90px">用印日期</th><th style="width:70px">用印人</th><th style="width:65px">狀態</th>
+        </tr></thead>
+        <tbody id="tb-log"></tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 列印區（隱藏，列印時顯示） ══ -->
+<div id="print-area">
+  <div class="print-page" id="print-content"></div>
+</div>
+
+<!-- modal 新增 -->
+<div class="overlay" id="m-add">
+  <div class="modal">
+    <h3>新增員工</h3>
+    <label>工號</label><input id="a-id" placeholder="例：C001" />
+    <label>姓名</label><input id="a-name" />
+    <label>部門</label>
+    <select id="a-dept"><option>業務部</option><option>研發部</option><option>財務部</option><option>行政部</option><option>人資部</option></select>
+    <label>職稱</label><input id="a-title" placeholder="例：業務專員" />
+    <label>到職日</label><input id="a-date" type="date" />
+    <label>契約類型</label>
+    <select id="a-contract"><option>不定期契約</option><option>定期契約</option><option>部分工時</option></select>
+    <div class="mfooter">
+      <button class="btn" onclick="closeM('m-add')">取消</button>
+      <button class="btn dark" onclick="addEmp()">新增</button>
+    </div>
+  </div>
+</div>
+
+<!-- modal 編輯 -->
+<div class="overlay" id="m-edit">
+  <div class="modal">
+    <h3>編輯員工資料</h3>
+    <input type="hidden" id="e-id" />
+    <label>姓名</label><input id="e-name" />
+    <label>部門</label>
+    <select id="e-dept"><option>業務部</option><option>研發部</option><option>財務部</option><option>行政部</option><option>人資部</option></select>
+    <label>職稱</label><input id="e-title" />
+    <label>到職日</label><input id="e-date" type="date" />
+    <label>契約類型</label>
+    <select id="e-contract"><option>不定期契約</option><option>定期契約</option><option>部分工時</option></select>
+    <div class="mfooter">
+      <button class="btn" onclick="closeM('m-edit')">取消</button>
+      <button class="btn dark" onclick="saveEdit()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════
+// 後台帳號設定（直接在這裡修改）
+// ════════════════════════════════════════
+const USERS = [
+  { id:'A001', name:'王小明', dept:'人資部', role:'hr',  pw:'hr@1234' },
+  { id:'A002', name:'李美玲', dept:'人資部', role:'hr',  pw:'hr@5678' },
+  { id:'A003', name:'陳志豪', dept:'招募部', role:'rec', pw:'rec@001' },
+  { id:'A004', name:'林佳蓉', dept:'薪酬部', role:'sal', pw:'sal@001' },
+  { id:'A005', name:'吳雅婷', dept:'招募部', role:'rec', pw:'rec@002' },
+]
+
+const ROLE_LABEL = { hr:'人資', rec:'招募', sal:'薪酬' }
+const ROLE_CLS   = { hr:'role-hr', rec:'role-rec', sal:'role-sal' }
+
+let me   = null
+let emps = [
+  { id:'B001', name:'張偉誠', dept:'研發部', title:'軟體工程師', date:'2025-04-01', contract:'不定期契約', status:'待用印',  rec:true,  sal:true,  sealDate:null },
+  { id:'B002', name:'吳雅婷', dept:'業務部', title:'業務專員',   date:'2025-04-08', contract:'不定期契約', status:'薪酬確認', rec:false, sal:true,  sealDate:null },
+  { id:'B003', name:'劉承翰', dept:'財務部', title:'財務分析師', date:'2025-04-10', contract:'定期契約',   status:'招募確認', rec:true,  sal:false, sealDate:null },
+  { id:'B004', name:'黃怡君', dept:'行政部', title:'行政助理',   date:'2025-04-15', contract:'部分工時',   status:'待確認',  rec:false, sal:false, sealDate:null },
+  { id:'B005', name:'蔡宗霖', dept:'研發部', title:'系統架構師', date:'2025-03-20', contract:'不定期契約', status:'已用印',  rec:true,  sal:true,  sealDate:'2025-04-02' },
+  { id:'B006', name:'林淑芬', dept:'人資部', title:'人資專員',   date:'2025-03-25', contract:'不定期契約', status:'已用印',  rec:true,  sal:true,  sealDate:'2025-04-05' },
+]
+let logs = [
+  { id:'B005', name:'蔡宗霖', dept:'研發部', contract:'不定期契約', date:'2025-04-02', by:'王小明' },
+  { id:'B006', name:'林淑芬', dept:'人資部', contract:'不定期契約', date:'2025-04-05', by:'王小明' },
+]
+let selectedWord = new Set()
+
+// ════ 登入 ════
+function onId(el){
+  const v = el.value.trim().toUpperCase(); el.value = v
+  el.classList.remove('err')
+  ;['err-id','err-pw'].forEach(i=>document.getElementById(i).style.display='none')
+  const u = USERS.find(x=>x.id===v)
+  const nd=document.getElementById('li-name'), nt=document.getElementById('li-name-text')
+  if(u){ nd.className='auto-name'; nt.innerHTML=`${u.name} <span class="dept-tag">${u.dept}</span>` }
+  else if(v.length){ nd.className='auto-name muted'; nt.textContent='查無此工號' }
+  else { nd.className='auto-name muted'; nt.textContent='—' }
+}
+
+function doLogin(){
+  const id=document.getElementById('li-id').value.trim().toUpperCase()
+  const pw=document.getElementById('li-pw').value
+  ;['err-id','err-pw'].forEach(i=>document.getElementById(i).style.display='none')
+  document.getElementById('li-id').classList.remove('err')
+  document.getElementById('li-pw').classList.remove('err')
+  const u=USERS.find(x=>x.id===id)
+  if(!u){ document.getElementById('err-id').style.display='block'; document.getElementById('li-id').classList.add('err'); return }
+  if(u.pw!==pw){ document.getElementById('err-pw').style.display='block'; document.getElementById('li-pw').classList.add('err'); document.getElementById('li-pw').value=''; return }
+  me=u
+  document.getElementById('who').textContent=`${me.name}（${me.id}）`
+  const rt=document.getElementById('role-tag'); rt.textContent=ROLE_LABEL[me.role]; rt.className='role-tag '+ROLE_CLS[me.role]
+  document.getElementById('w-applicant').value=me.name
+  document.getElementById('w-date').value=new Date().toISOString().slice(0,10)
+  document.getElementById('s-login').style.display='none'
+  document.getElementById('s-main').style.display='flex'
+  renderAll()
+}
+
+function logout(){
+  me=null; selectedWord.clear()
+  document.getElementById('s-main').style.display='none'
+  document.getElementById('s-login').style.display='flex'
+  document.getElementById('li-id').value=''
+  document.getElementById('li-pw').value=''
+  document.getElementById('li-name').className='auto-name muted'
+  document.getElementById('li-name-text').textContent='—'
+  sw('emp',document.querySelectorAll('.tab')[0])
+}
+
+function sw(p,btn){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'))
+  document.querySelectorAll('.pane').forEach(x=>x.classList.remove('on'))
+  btn.classList.add('on')
+  document.getElementById('p-'+p).classList.add('on')
+  renderAll()
+}
+
+// ════ badge ════
+function badge(s){
+  const m={'待確認':'b-wait','招募確認':'b-rec','薪酬確認':'b-sal','待用印':'b-ready','已用印':'b-done','退回':'b-rej'}
+  return `<span class="badge ${m[s]||''}">${s}</span>`
+}
+
+// ════ 員工名單 ════
+function rEmp(){
+  const q=(document.getElementById('q-emp').value||'').toLowerCase()
+  const fd=document.getElementById('f-dept').value
+  const fs=document.getElementById('f-status').value
+  const thisM=new Date().toISOString().slice(0,7)
+  const list=emps.filter(e=>{
+    const mq=!q||e.id.toLowerCase().includes(q)||e.name.includes(q)||e.dept.includes(q)
+    return mq&&(!fd||e.dept===fd)&&(!fs||e.status===fs)
+  })
+  document.getElementById('k-total').textContent=emps.length
+  document.getElementById('k-new').textContent=emps.filter(e=>e.date.startsWith(thisM)).length
+  document.getElementById('k-pend').textContent=emps.filter(e=>e.status!=='已用印').length
+  document.getElementById('k-done').textContent=emps.filter(e=>e.status==='已用印').length
+  const ea=document.getElementById('emp-actions')
+  ea.innerHTML=me.role==='hr'
+    ?`<button class="btn dark" onclick="openAdd()">＋ 新增員工</button>`
+    :`<span style="font-size:11px;color:#aaa">僅人資可新增</span>`
+  const tb=document.getElementById('tb-emp')
+  if(!list.length){tb.innerHTML=`<tr><td colspan="8" class="empty">無符合資料</td></tr>`;return}
+  tb.innerHTML=list.map(e=>{
+    let ops=''
+    if(me.role==='sal'&&e.status!=='已用印') ops=`<button class="ab edit" onclick="openEdit('${e.id}')">編輯</button>`
+    else if(me.role==='hr'&&e.status!=='已用印') ops=`<button class="ab no" onclick="delEmp('${e.id}')">移除</button>`
+    else if(e.status==='已用印') ops=`<span style="color:#bbb;font-size:11px">完成</span>`
+    else ops=`<span class="no-perm">無操作權限</span>`
+    return `<tr><td>${e.id}</td><td>${e.name}</td><td>${e.dept}</td><td>${e.title}</td><td>${e.date}</td><td>${e.contract}</td><td>${badge(e.status)}</td><td>${ops}</td></tr>`
+  }).join('')
+}
+
+// ════ 確認名單 ════
+function rConfirm(){
+  const active=emps.filter(e=>e.status!=='已用印'&&e.status!=='退回')
+  document.getElementById('c-k1').textContent=active.filter(e=>!e.rec&&!e.sal).length
+  document.getElementById('c-k2').textContent=active.filter(e=>e.rec).length
+  document.getElementById('c-k3').textContent=active.filter(e=>e.sal).length
+  document.getElementById('c-k4').textContent=active.filter(e=>e.rec&&e.sal).length
+  const colors={hr:'#5f5e5a',rec:'#185fa5',sal:'#3b6d11'}
+  const msgs={
+    hr:'您的角色為人資，本頁僅供檢視，招募與薪酬確認欄位由各自部門操作',
+    rec:'您的角色為招募，可操作「招募確認」欄位',
+    sal:'您的角色為薪酬，可操作「薪酬確認」欄位，並可退回申請',
+  }
+  document.getElementById('confirm-banner').innerHTML=`<div class="perm-dot" style="background:${colors[me.role]}"></div>${msgs[me.role]}`
+  const tb=document.getElementById('tb-confirm')
+  if(!active.length){tb.innerHTML=`<tr><td colspan="7" class="empty">目前無待確認員工</td></tr>`;return}
+  tb.innerHTML=active.map(e=>{
+    const rc=e.rec?`<span class="badge b-rec">✓ 已確認</span>`:me.role==='rec'?`<button class="ab ok" onclick="cfRec('${e.id}')">確認</button>`:`<span class="no-perm">招募部門確認</span>`
+    const sc=e.sal?`<span class="badge b-sal">✓ 已確認</span>`:me.role==='sal'?`<button class="ab ok" onclick="cfSal('${e.id}')">確認</button>`:`<span class="no-perm">薪酬部門確認</span>`
+    const op=e.rec&&e.sal?`<span class="badge b-ready">待用印</span>`:me.role==='sal'?`<button class="ab no" onclick="rejectEmp('${e.id}')">退回</button>`:`<span class="no-perm">薪酬操作</span>`
+    return `<tr><td>${e.id}</td><td>${e.name}</td><td>${e.dept}</td><td>${e.contract}</td><td>${rc}</td><td>${sc}</td><td>${op}</td></tr>`
+  }).join('')
+}
+
+// ════ 用印管理 ════
+function rSeal(){
+  const list=emps.filter(e=>e.status==='待用印')
+  const tb=document.getElementById('tb-seal')
+  if(!list.length){tb.innerHTML=`<tr><td colspan="7" class="empty">目前無待用印員工</td></tr>`;return}
+  tb.innerHTML=list.map(e=>{
+    const op=me.role==='hr'?`<button class="ab ink" onclick="doSeal('${e.id}')">用 印</button>`:`<span class="no-perm">僅人資用印</span>`
+    return `<tr><td>${e.id}</td><td>${e.name}</td><td>${e.dept}</td><td>${e.contract}</td><td>${e.date}</td><td><div class="flow"><span class="fd done"></span><span class="fa">→</span><span class="fd done"></span><span class="fa">→</span><span class="fd act"></span></div></td><td>${op}</td></tr>`
+  }).join('')
+}
+
+// ════ 產出申請單 ════
+function rWord(){
+  const sealed=emps.filter(e=>e.status==='已用印')
+  const list=document.getElementById('word-sel-list')
+  list.innerHTML=sealed.length
+    ? sealed.map(e=>`<div class="sel-item" onclick="toggleWord('${e.id}')"><input type="checkbox" id="chk-${e.id}" ${selectedWord.has(e.id)?'checked':''} onclick="event.stopPropagation();toggleWord('${e.id}')"/><span class="sel-name">${e.name}</span><span class="sel-dept">${e.dept}</span></div>`).join('')
+    : `<div class="empty">尚無已用印員工</div>`
+  updateChosen()
+}
+
+function toggleWord(id){
+  selectedWord.has(id)?selectedWord.delete(id):selectedWord.add(id)
+  const chk=document.getElementById('chk-'+id)
+  if(chk) chk.checked=selectedWord.has(id)
+  updateChosen()
+}
+
+function updateChosen(){
+  const sel=[...selectedWord].map(id=>emps.find(e=>e.id===id)).filter(Boolean)
+  const cl=document.getElementById('chosen-list')
+  const hint=document.getElementById('word-count-hint')
+  if(!sel.length){
+    cl.innerHTML=`<div style="font-size:12px;color:#aaa;padding:10px 0">請從左側勾選員工</div>`
+    hint.textContent=''
+    hint.style.display='none'
+  } else {
+    cl.innerHTML=sel.map(e=>`<div class="chosen-item"><span>${e.name}（${e.dept}）</span><button class="chosen-remove" onclick="toggleWord('${e.id}')">移除</button></div>`).join('')
+    hint.style.display='block'
+    hint.innerHTML=`共 <b>${sel.length}</b> 人　份數：<b>${sel.length} 份</b>　張數：<b>${sel.length*2} 張</b>（每人一式二份）`
+  }
+  document.getElementById('gen-btn').disabled=sel.length===0
+}
+
+// ════ 列印申請單 ════
+function printForm(){
+  const sel=[...selectedWord].map(id=>emps.find(e=>e.id===id)).filter(Boolean)
+  if(!sel.length){alert('請至少選擇一位員工');return}
+
+  const applyDate=document.getElementById('w-date').value
+  const [yyyy,mm,dd]=applyDate?applyDate.split('-'):[new Date().getFullYear(),String(new Date().getMonth()+1).padStart(2,'0'),String(new Date().getDate()).padStart(2,'0')]
+  const applicant=me.name
+  const count=sel.length
+  const sheets=sel.length*2
+  const empList=sel.map(e=>e.name).join('、')+'。'
+
+  document.getElementById('print-content').innerHTML=`
+<div class="print-title">用&ensp;印&ensp;申&ensp;請&ensp;表</div>
+<div class="print-date">申請日期：${parseInt(yyyy)} 年 ${parseInt(mm)} 月 ${parseInt(dd)} 日</div>
+<div class="print-doc-type">
+　文件類別：□契約書，編號：&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;名稱：<br>
+　&emsp;&emsp;&emsp;&emsp;&emsp;□公文函，公文函編號：金字第&emsp;&emsp;&emsp;&emsp;&emsp;號<br>
+　&emsp;&emsp;&emsp;&emsp;&emsp;■其它&emsp;服務證明書、勞動契約<br>
+　用印類別：□經濟部登記印鑑　□銀行登記印鑑　■合約用專用章　□公司專用章　□其他類
+</div>
+
+<table class="print-table">
+  <tr>
+    <td class="hdr">申請人</td>
+    <td>${applicant}</td>
+  </tr>
+  <tr>
+    <td class="hdr">使用方式</td>
+    <td>
+      ■ 文件用印&emsp;&emsp;□ 攜出&emsp;&emsp;□其他：<br>
+      <span style="font-size:9pt">攜出時間：&ensp;&ensp;年&ensp;&ensp;月&ensp;&ensp;日&ensp;&ensp;時&ensp;&ensp;分&emsp;&emsp;歸還時間：&ensp;&ensp;年&ensp;&ensp;月&ensp;&ensp;日&ensp;&ensp;時&ensp;&ensp;分</span>
+    </td>
+  </tr>
+  <tr>
+    <td class="hdr">使用目的</td>
+    <td>新進人員勞動契約、服務證明書 申請用印。</td>
+  </tr>
+  <tr>
+    <td class="hdr">份數／張數</td>
+    <td>${count} 份 ／ ${sheets} 張</td>
+  </tr>
+  <tr>
+    <td class="hdr">合約金額</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td class="hdr">用印人</td>
+    <td>大章：&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;小章：</td>
+  </tr>
+  <tr>
+    <td class="hdr" style="vertical-align:top;padding-top:6px">備&emsp;&emsp;註</td>
+    <td style="vertical-align:top;padding-top:6px;min-height:30mm">
+      勞動契約用印，共 ${count} 份：<br>
+      ${empList}
+      <br><br><br>
+    </td>
+  </tr>
+</table>
+
+<table class="print-approve">
+  <tr>
+    <td class="approve-hdr" style="width:25%">核　准</td>
+    <td class="approve-hdr" style="width:25%">覆　核</td>
+    <td class="approve-hdr" style="width:25%">覆　核</td>
+    <td class="approve-hdr" style="width:25%">申請人</td>
+  </tr>
+  <tr>
+    <td style="vertical-align:bottom;padding-bottom:4px;text-align:center;font-size:10pt">□ OK &emsp; □ NG</td>
+    <td style="vertical-align:top;padding-top:4px;font-size:10pt">意見：</td>
+    <td style="vertical-align:top;padding-top:4px;font-size:10pt">意見：</td>
+    <td style="vertical-align:bottom;padding-bottom:4px;text-align:center">${applicant}</td>
+  </tr>
+</table>
+
+<div class="print-notes">
+1. 注意事項：合約申請使用公司印鑑，於其核決程序前，須與法務人員確認。<br>
+2. 核決權限：<br>
+　A. 經濟部登記印鑑：會簽行政管理處並呈董事長核准，屬對外發文用印及公司年報用印，則授權行政管理處處長核准。<br>
+　B. 銀行登記印鑑：呈總經理核准。<br>
+　C. 合約用專用章：須會簽行政管理處並呈總經理核准，屬一般公司日常行政作業，則授權行政管理處處長核准，如：在職證明、保密協定、外勞入出境申請、消防申報、勞安衛申報等。<br>
+　D. 公司專用章：處級主管核准。<br>
+　E. 若有未盡事宜，則依據核決權限表規範。<br>
+3. 保存期限：二年。
+</div>
+<div class="print-footer">
+  <span>金利精密工業股份有限公司</span>
+  <span>版本：5&emsp;&emsp;表單編號：KAPFM-04-005</span>
+</div>`
+
+  document.getElementById('print-area').style.display='block'
+  setTimeout(()=>{
+    window.print()
+    setTimeout(()=>{ document.getElementById('print-area').style.display='none' },500)
+  },300)
+}
+
+// ════ 用印紀錄 ════
+function rLog(){
+  const tb=document.getElementById('tb-log')
+  if(!logs.length){tb.innerHTML=`<tr><td colspan="7" class="empty">尚無用印紀錄</td></tr>`;return}
+  tb.innerHTML=[...logs].reverse().map(r=>`<tr><td>${r.id}</td><td>${r.name}</td><td>${r.dept}</td><td>${r.contract}</td><td>${r.date}</td><td>${r.by}</td><td><span class="badge b-done">已用印</span></td></tr>`).join('')
+}
+
+function renderAll(){ rEmp(); rConfirm(); rSeal(); rWord(); rLog() }
+
+// ════ 員工操作 ════
+function delEmp(id){ if(!confirm('確定移除此員工？'))return; emps=emps.filter(e=>e.id!==id); selectedWord.delete(id); renderAll() }
+function cfRec(id){ const e=emps.find(x=>x.id===id); e.rec=true; e.status=e.rec&&e.sal?'待用印':'招募確認'; renderAll() }
+function cfSal(id){ const e=emps.find(x=>x.id===id); e.sal=true; e.status=e.rec&&e.sal?'待用印':'薪酬確認'; renderAll() }
+function rejectEmp(id){ const e=emps.find(x=>x.id===id); e.rec=false; e.sal=false; e.status='退回'; renderAll() }
+function doSeal(id){
+  if(!confirm('確認對此員工勞動契約用印？'))return
+  const e=emps.find(x=>x.id===id)
+  const today=new Date().toISOString().slice(0,10)
+  e.status='已用印'; e.sealDate=today
+  logs.push({id:e.id,name:e.name,dept:e.dept,contract:e.contract,date:today,by:me.name})
+  renderAll()
+}
+
+// ════ Modal ════
+function openAdd(){ document.getElementById('m-add').classList.add('open'); document.getElementById('a-date').value=new Date().toISOString().slice(0,10) }
+function openEdit(id){
+  const e=emps.find(x=>x.id===id)
+  document.getElementById('e-id').value=e.id
+  document.getElementById('e-name').value=e.name
+  document.getElementById('e-dept').value=e.dept
+  document.getElementById('e-title').value=e.title
+  document.getElementById('e-date').value=e.date
+  document.getElementById('e-contract').value=e.contract
+  document.getElementById('m-edit').classList.add('open')
+}
+function closeM(id){ document.getElementById(id).classList.remove('open') }
+function addEmp(){
+  const id=document.getElementById('a-id').value.trim()
+  const name=document.getElementById('a-name').value.trim()
+  const date=document.getElementById('a-date').value
+  if(!id||!name||!date){alert('請填寫工號、姓名、到職日');return}
+  if(emps.find(e=>e.id===id)){alert('工號已存在');return}
+  emps.push({id,name,dept:document.getElementById('a-dept').value,title:document.getElementById('a-title').value||'',date,contract:document.getElementById('a-contract').value,status:'待確認',rec:false,sal:false,sealDate:null})
+  closeM('m-add'); renderAll()
+}
+function saveEdit(){
+  const id=document.getElementById('e-id').value
+  const e=emps.find(x=>x.id===id)
+  e.name=document.getElementById('e-name').value.trim()||e.name
+  e.dept=document.getElementById('e-dept').value
+  e.title=document.getElementById('e-title').value.trim()
+  e.date=document.getElementById('e-date').value||e.date
+  e.contract=document.getElementById('e-contract').value
+  closeM('m-edit'); renderAll()
+}
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')}))
+</script>
+</body>
+</html>
