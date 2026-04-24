@@ -243,7 +243,7 @@ tr:hover td{background:#fafaf8}
     <button class="tab"     onclick="sw('seal',this)">用印管理</button>
     <button class="tab"     onclick="sw('word',this)">產出申請單</button>
     <button class="tab"     onclick="sw('log',this)">用印紀錄</button>
-    <button class="tab"     onclick="sw('settings',this)">⚙ 系統設定</button>
+    <button class="tab" id="tab-settings" onclick="sw('settings',this)" style="display:none">⚙ 系統設定</button>
   </div>
   <div class="body">
 
@@ -267,7 +267,7 @@ tr:hover td{background:#fafaf8}
         </select>
         <select class="sf" id="f-status" onchange="rEmp()">
           <option value="">全部狀態</option>
-          <option>待確認</option><option>招募確認</option><option>薪酬確認</option><option>待用印</option><option>已用印</option><option>退回</option>
+          <option>待確認</option><option>招募確認</option><option>薪酬確認</option><option>待用印</option><option>已用印</option><option>歸檔</option><option>退回</option>
         </select>
       </div>
       <div class="tw"><table>
@@ -291,14 +291,14 @@ tr:hover td{background:#fafaf8}
       <div id="confirm-banner" class="perm-banner"></div>
       <div class="kpi-row">
         <div class="kpi"><div class="kpi-n" id="c-k1">0</div><div class="kpi-l">待招募確認</div></div>
-        <div class="kpi"><div class="kpi-n" id="c-k2">0</div><div class="kpi-l">招募已確認</div></div>
-        <div class="kpi"><div class="kpi-n" id="c-k3">0</div><div class="kpi-l">薪酬已確認</div></div>
-        <div class="kpi"><div class="kpi-n" id="c-k4">0</div><div class="kpi-l">雙確認完成</div></div>
+        <div class="kpi"><div class="kpi-n" id="c-k2">0</div><div class="kpi-l">待薪酬確認</div></div>
+        <div class="kpi"><div class="kpi-n" id="c-k3">0</div><div class="kpi-l">待歸檔</div></div>
+        <div class="kpi"><div class="kpi-n" id="c-k4">0</div><div class="kpi-l">已歸檔</div></div>
       </div>
       <div class="tw"><table>
         <thead><tr>
           <th style="width:62px">工號</th><th style="width:72px">姓名</th><th style="width:70px">部門</th>
-          <th style="width:78px">契約</th><th style="width:108px">招募確認</th><th style="width:108px">薪酬確認</th><th style="width:100px">操作</th>
+          <th style="width:78px">契約</th><th style="width:95px">招募確認</th><th style="width:95px">薪酬確認</th><th style="width:90px">歸檔</th><th style="width:70px">操作</th>
         </tr></thead>
         <tbody id="tb-confirm"></tbody>
       </table></div>
@@ -396,7 +396,7 @@ tr:hover td{background:#fafaf8}
     <label>部門</label><select id="a-dept"><option>業務部</option><option>研發部</option><option>財務部</option><option>行政部</option><option>人資部</option></select>
     <label>職稱</label><input id="a-title" placeholder="例：業務專員"/>
     <label>到職日</label><input id="a-date" type="date"/>
-    <label>契約類型</label><select id="a-contract"><option>不定期契約(直接)</option><option>不定期契約(間接)</option><option>定期契約</option><option>約聘人員</option></select>
+    <label>契約類型</label><select id="a-contract"><option>不定期契約(直接)</option><option>不定期契約(間接)</option></select>
     <div class="mfooter"><button class="btn" onclick="closeM('m-add')">取消</button><button class="btn dark" onclick="addEmp()">新增</button></div>
   </div>
 </div>
@@ -411,7 +411,7 @@ tr:hover td{background:#fafaf8}
     <label>部門</label><select id="e-dept"><option>業務部</option><option>研發部</option><option>財務部</option><option>行政部</option><option>人資部</option></select>
     <label>職稱</label><input id="e-title"/>
     <label>到職日</label><input id="e-date" type="date"/>
-    <label>契約類型</label><select id="e-contract"><option>不定期契約(直接)</option><option>不定期契約(間接)</option><option>定期契約</option><option>約聘人員</option></select>
+    <label>契約類型</label><select id="e-contract"><option>不定期契約(直接)</option><option>不定期契約(間接)</option></select>
     <div class="mfooter"><button class="btn" onclick="closeM('m-edit')">取消</button><button class="btn dark" onclick="saveEdit()">儲存</button></div>
   </div>
 </div>
@@ -424,7 +424,7 @@ tr:hover td{background:#fafaf8}
       📋 Excel 欄位順序（第一列為標題，可自行調整欄位名稱）：<br>
       <b>工號、姓名、部門、職稱、到職日、契約類型</b><br>
       到職日格式：2025-04-01 或 2025/04/01<br>
-      契約類型：不定期契約(直接) / 不定期契約(間接) / 定期契約 / 約聘人員
+      契約類型：不定期契約(直接) / 不定期契約(間接)
     </div>
     <div class="drop-zone" id="drop-zone" onclick="document.getElementById('excel-input').click()"
       ondragover="event.preventDefault();this.classList.add('drag')"
@@ -495,7 +495,7 @@ let me   = null
 let emps = [
   { id:'B001', name:'張偉誠', dept:'研發部', title:'軟體工程師', date:'2025-04-01', contract:'不定期契約(直接)', status:'待用印',  rec:true,  sal:true,  sealDate:null },
   { id:'B002', name:'吳雅婷', dept:'業務部', title:'業務專員',   date:'2025-04-08', contract:'不定期契約(直接)', status:'薪酬確認', rec:false, sal:true,  sealDate:null },
-  { id:'B003', name:'劉承翰', dept:'財務部', title:'財務分析師', date:'2025-04-10', contract:'定期契約',   status:'招募確認', rec:true,  sal:false, sealDate:null },
+  { id:'B003', name:'劉承翰', dept:'財務部', title:'財務分析師', date:'2025-04-10', contract:'不定期契約(間接)', status:'招募確認', rec:true,  sal:false, sealDate:null },
   { id:'B004', name:'黃怡君', dept:'行政部', title:'行政助理',   date:'2025-04-15', contract:'不定期契約(間接)',   status:'待確認',  rec:false, sal:false, sealDate:null },
   { id:'B005', name:'蔡宗霖', dept:'研發部', title:'系統架構師', date:'2025-03-20', contract:'不定期契約(直接)', status:'已用印',  rec:true,  sal:true,  sealDate:'2025-04-02' },
   { id:'B006', name:'林淑芬', dept:'人資部', title:'人資專員',   date:'2025-03-25', contract:'不定期契約(直接)', status:'已用印',  rec:true,  sal:true,  sealDate:'2025-04-05' },
@@ -532,6 +532,8 @@ function doLogin(){
   const rt=document.getElementById('role-tag'); rt.textContent=ROLE_LABEL[me.role]; rt.className='role-tag '+ROLE_CLS[me.role]
   document.getElementById('w-applicant').value=me.name
   document.getElementById('w-date').value=new Date().toISOString().slice(0,10)
+  // 系統設定 tab 只有薪酬可見
+  document.getElementById('tab-settings').style.display=me.role==='sal'?'':'none'
   document.getElementById('s-login').style.display='none'
   document.getElementById('s-main').style.display='flex'
   renderAll()
@@ -557,7 +559,7 @@ function sw(p,btn){
 }
 
 function badge(s){
-  const m={'待確認':'b-wait','招募確認':'b-rec','薪酬確認':'b-sal','待用印':'b-ready','已用印':'b-done','退回':'b-rej'}
+  const m={'待確認':'b-wait','招募確認':'b-rec','薪酬確認':'b-sal','待用印':'b-ready','已用印':'b-done','退回':'b-rej','歸檔':'b-done'}
   return `<span class="badge ${m[s]||''}">${s}</span>`
 }
 
@@ -605,21 +607,82 @@ function rEmp(){
 
 // ════ 確認名單 ════
 function rConfirm(){
-  const active=emps.filter(e=>e.status!=='已用印'&&e.status!=='退回')
-  document.getElementById('c-k1').textContent=active.filter(e=>!e.rec&&!e.sal).length
-  document.getElementById('c-k2').textContent=active.filter(e=>e.rec).length
-  document.getElementById('c-k3').textContent=active.filter(e=>e.sal).length
-  document.getElementById('c-k4').textContent=active.filter(e=>e.rec&&e.sal).length
+  const isDirect = e => e.contract === '不定期契約(直接)'
+  // 待確認名單：未歸檔、未退回
+  const active = emps.filter(e => !['歸檔','退回'].includes(e.status))
+  // KPI
+  document.getElementById('c-k1').textContent = active.filter(e=>!e.rec).length
+  document.getElementById('c-k2').textContent = active.filter(e=>e.rec && isDirect(e) && !e.sal).length
+  document.getElementById('c-k3').textContent = active.filter(e=>e.status==='已用印'&&!e.archived).length
+  document.getElementById('c-k4').textContent = emps.filter(e=>e.status==='歸檔').length
+
   const colors={hr:'#5f5e5a',rec:'#185fa5',sal:'#3b6d11'}
-  const msgs={hr:'您的角色為人資，本頁僅供檢視',rec:'您的角色為招募，可操作「招募確認」欄位',sal:'您的角色為薪酬，可操作「薪酬確認」欄位，並可退回申請'}
+  const msgs={
+    hr:'您的角色為人資，本頁僅供檢視',
+    rec:'您的角色為招募，可操作「招募確認」及直接人員「歸檔」',
+    sal:'您的角色為薪酬，可操作「薪酬確認（送簽中）」及間接人員「歸檔」'
+  }
   document.getElementById('confirm-banner').innerHTML=`<div class="perm-dot" style="background:${colors[me.role]}"></div>${msgs[me.role]}`
   const tb=document.getElementById('tb-confirm')
-  if(!active.length){tb.innerHTML=`<tr><td colspan="7" class="empty">目前無待確認員工</td></tr>`;return}
+  if(!active.length){tb.innerHTML=`<tr><td colspan="8" class="empty">目前無待確認員工</td></tr>`;return}
+
   tb.innerHTML=active.map(e=>{
-    const rc=e.rec?`<span class="badge b-rec">✓ 已確認</span>`:me.role==='rec'?`<button class="ab ok" onclick="cfRec('${e.id}')">確認</button>`:`<span class="no-perm">招募部門確認</span>`
-    const sc=e.sal?`<span class="badge b-sal">✓ 已確認</span>`:me.role==='sal'?`<button class="ab ok" onclick="cfSal('${e.id}')">確認</button>`:`<span class="no-perm">薪酬部門確認</span>`
-    const op=e.rec&&e.sal?`<span class="badge b-ready">待用印</span>`:me.role==='sal'?`<button class="ab no" onclick="rejectEmp('${e.id}')">退回</button>`:`<span class="no-perm">薪酬操作</span>`
-    return `<tr><td>${e.id}</td><td>${e.name}</td><td>${e.dept}</td><td>${e.contract}</td><td>${rc}</td><td>${sc}</td><td>${op}</td></tr>`
+    const direct = isDirect(e)
+
+    // ── 招募確認欄 ──
+    let recCell
+    if(e.rec){
+      recCell=`<span class="badge b-rec">✓ 已確認</span>`
+    } else if(me.role==='rec'){
+      recCell=`<button class="ab ok" onclick="cfRec('${e.id}')">確認</button>`
+    } else {
+      recCell=`<span class="no-perm">招募確認</span>`
+    }
+
+    // ── 薪酬確認欄（只有直接人員需要）──
+    let salCell
+    if(!direct){
+      salCell=`<span style="color:#bbb;font-size:10px">不需薪酬確認</span>`
+    } else if(e.sal){
+      salCell=`<span class="badge b-sal">送簽中</span>`
+    } else if(me.role==='sal' && e.rec){
+      salCell=`<button class="ab ok" onclick="cfSal('${e.id}')">確認</button>`
+    } else {
+      salCell=`<span class="no-perm">薪酬確認</span>`
+    }
+
+    // ── 歸檔欄（用印完成後才出現）──
+    let archCell
+    if(e.status==='已用印'){
+      if(direct){
+        // 直接人員 → 招募歸檔
+        archCell = me.role==='rec'
+          ? `<button class="ab ok" onclick="doArchive('${e.id}')">歸檔</button>`
+          : `<span class="no-perm">招募歸檔</span>`
+      } else {
+        // 間接人員 → 薪酬歸檔
+        archCell = me.role==='sal'
+          ? `<button class="ab ok" onclick="doArchive('${e.id}')">歸檔</button>`
+          : `<span class="no-perm">薪酬歸檔</span>`
+      }
+    } else if(e.status==='歸檔'){
+      archCell=`<span class="badge b-done">✓ 已歸檔</span>`
+    } else {
+      archCell=`<span style="color:#bbb;font-size:10px">待用印後歸檔</span>`
+    }
+
+    // ── 操作欄 ──
+    let opCell
+    if(['待確認','招募確認','薪酬確認'].includes(e.status) && me.role==='sal'){
+      opCell=`<button class="ab no" onclick="rejectEmp('${e.id}')">退回</button>`
+    } else {
+      opCell=`<span style="color:#bbb;font-size:10px">—</span>`
+    }
+
+    return `<tr>
+      <td>${e.id}</td><td>${e.name}</td><td>${e.dept}</td><td>${e.contract}</td>
+      <td>${recCell}</td><td>${salCell}</td><td>${archCell}</td><td>${opCell}</td>
+    </tr>`
   }).join('')
 }
 
@@ -908,9 +971,31 @@ function confirmImport(){
 
 // ════ 員工操作 ════
 function delEmp(id){ if(!confirm('確定移除此員工？'))return; emps=emps.filter(e=>e.id!==id); selectedWord.delete(id); renderAll() }
-function cfRec(id){ const e=emps.find(x=>x.id===id); e.rec=true; e.status=e.rec&&e.sal?'待用印':'招募確認'; renderAll() }
-function cfSal(id){ const e=emps.find(x=>x.id===id); e.sal=true; e.status=e.rec&&e.sal?'待用印':'薪酬確認'; renderAll() }
+function cfRec(id){
+  const e=emps.find(x=>x.id===id)
+  e.rec=true
+  if(e.contract==='不定期契約(間接)'){
+    // 間接人員不需薪酬確認，直接待用印
+    e.status='待用印'
+  } else {
+    // 直接人員需要薪酬確認
+    e.status = e.sal ? '待用印' : '招募確認'
+  }
+  renderAll()
+}
+function cfSal(id){
+  const e=emps.find(x=>x.id===id)
+  e.sal=true
+  e.status = e.rec ? '待用印' : '薪酬確認'
+  renderAll()
+}
 function rejectEmp(id){ const e=emps.find(x=>x.id===id); e.rec=false; e.sal=false; e.status='退回'; renderAll() }
+function doArchive(id){
+  if(!confirm('確認歸檔此員工的勞動契約？'))return
+  const e=emps.find(x=>x.id===id)
+  e.status='歸檔'
+  renderAll()
+}
 function doSeal(id){
   if(!confirm('確認對此員工勞動契約用印？'))return
   const e=emps.find(x=>x.id===id)
